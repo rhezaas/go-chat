@@ -1,0 +1,30 @@
+@startuml chat
+
+actor client
+boundary server
+actor agent
+
+agent -> server : CONNECT
+agent <-- server : CONNECTED
+
+client -> server : CONNECT
+client <-- server : CONNECTED
+
+agent -> server : SUBSCRIBE: /login
+agent <-- server: MESSAGE: /login
+
+agent -> server : SUBSCRIBE: /chat?userID=""
+agent <-- server : MESSAGE: /chat?userID=""
+
+client -> server : SUBSCRIBE: /login
+client <-- server: MESSAGE: /login
+
+client -> server : SUBSCRIBE: /chat?userID=""&contactID=""
+client <-- server : MESSAGE: /chat?userID=""&contactID=""
+
+client -> server : SEND: /chat?userID=""&contactID=""
+client <-- server : MESSAGE: /chat?userID=""&contactID=""
+agent <-- server : MESSAGE: /chat?userID=""
+agent <-- server : MESSAGE: /chat?userID=""&contactID=""
+
+@enduml
