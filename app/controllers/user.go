@@ -17,67 +17,45 @@ type UserController struct {
 // TopicRoute ...
 func (User UserController) TopicRoute() types.TopicRoute {
 	return types.TopicRoute{
-		helper.TopicBuilder(`/login`, `id`, `name`, `role`): User.login,
+		helper.TopicBuilder("/login", "id", "name", "role"): User.login,
 	}
 }
 
 func (User UserController) login(params types.TopicParams, message string) {
 	// check required params
-	if params[`id`] == `` {
-		User.Stomp.SendError(`id is required`)
+	if params["id"] == "" {
+		User.Stomp.SendError(`"id" is required`)
 	}
 
 	// check required params
-	if params[`name`] == `` {
-		User.Stomp.SendError(`name is required`)
-	}
-
-	// check required params
-	if params[`role`] == `` {
-		User.Stomp.SendError(`role is required`)
+	if params["name"] == "" {
+		User.Stomp.SendError(`"name" is required`)
 	}
 
 	// create user object
 	user := dto.User{
-		ID:   params[`id`],
-		Name: params[`name`],
-		Role: params[`role`],
+		DefaultUserGroup: dto.DefaultUserGroup{
+			ID:   params["id"],
+			Name: params["name"],
+		},
 	}
 
-	// prep userRedis
-	userRedis := models.UserModel{Redis: User.Redis}
+	// call user model
+	userModel := models.UserModel{Redis: User.Redis}
 
 	// insert to redis
-	err := userRedis.CreateUser(user)
+	err := userModel.CreateUser(user)
 
 	// send error if something happens
 	if err != nil {
 		User.Stomp.SendError(err.Error())
 	}
 
-	// send message if user is agent
-	if user.Role == `agent` {
-		User.Stomp.SendQueue(
-			helper.TopicBuilder(`/login`, types.TopicParams{
-				`id`:   params[`id`],
-				`name`: params[`name`],
-				`role`: params[`role`],
-			}),
-			"",
-		)
-	}
-
-	// send message if user is client
-	if user.Role == `client` {
-		// get random contact
-
-		User.Stomp.SendQueue(
-			helper.TopicBuilder(`/login`, types.TopicParams{
-				`id`:   params[`id`],
-				`name`: params[`name`],
-				`role`: params[`role`],
-			}),
-			"",
-		)
-	}
+	User.Stomp.SendQueue(
+		helper.TopicBuilder("/login", types.TopicParams{
+			"id":   params["id"],
+			"name": params["name"],
+		}),
+		"",
+	)
 }

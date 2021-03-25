@@ -25,7 +25,6 @@ func (User UserModel) CreateUser(user dto.User) error {
 		err = User.Redis.HSet(userKey, map[string]string{
 			`id`:   user.ID,
 			`name`: user.Name,
-			`role`: user.Role,
 		})
 	}
 
@@ -64,8 +63,10 @@ func (User UserModel) ListContact(userID string) ([]dto.User, error) {
 		}
 
 		contacts = append(contacts, dto.User{
-			ID:   contact["id"],
-			Name: contact["name"],
+			DefaultUserGroup: dto.DefaultUserGroup{
+				ID:   contact["id"],
+				Name: contact["name"],
+			},
 		})
 	}
 

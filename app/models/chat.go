@@ -13,26 +13,26 @@ type ChatModel struct {
 
 // ChatList ...
 func (Chat ChatModel) ChatList(userID string) ([]dto.ChatList, error) {
-	_chatList := []dto.ChatList{}
+	chatLists := []dto.ChatList{}
 
 	userIDKey := helper.KeyBuilder("user", userID)
-	userChatContactListKey := helper.KeyBuilder(userIDKey, "chats")
+	userChatIDsKey := helper.KeyBuilder(userIDKey, "chats")
 
-	userChatContactList, err := Chat.Redis.SMembers(userChatContactListKey)
+	userChatIDLists, err := Chat.Redis.SMembers(userChatIDsKey)
 
 	if err != nil {
 		return []dto.ChatList{}, err
 	}
 
-	for _, chatContact := range userChatContactList {
-		contact, err := Chat.Redis.HGetAll(chatContact)
-		messages, err := Chat.Redis.SMembers(helper.KeyBuilder(userIDKey, "chat", "contact", contact["id"]))
+	for _, chatID := range userChatIDLists {
+		chat, err := Chat.Redis.HGetAll(chatID)
+		messages, err := Chat.Redis.SMembers(helper.KeyBuilder(userIDKey, "chat", chat["id"]))
 		message, err := Chat.Redis.HGetAll(helper.KeyBuilder("message", messages[len(messages)-1]))
 
-		_chatList = append(_chatList, dto.ChatList{
-			Contact: dto.User{
-				ID:   contact["id"],
-				Name: contact["name"],
+		chatLists = append(chatLists, dto.ChatList{
+			Chat: dto.Chat{
+				ID:    chat["id"],
+				Title: chat["name"],
 			},
 			Message: dto.Message{
 				ID:        message["id"],
@@ -47,7 +47,7 @@ func (Chat ChatModel) ChatList(userID string) ([]dto.ChatList, error) {
 		}
 	}
 
-	return _chatList, err
+	return chatLists, err
 }
 
 // ChatRoom ...

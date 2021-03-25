@@ -2,6 +2,6 @@ package dto
 
 // ChatRoom ...
 type ChatRoom struct {
-	Contact  User      `json:"contact"`
+	Chat     Chat      `json:"chat"`
 	Messages []Message `json:"messages"`
 }
